@@ -2,9 +2,21 @@ const express = require("express");
 const app = express();
 const path = require("path");
 const PORT = process.env.PORT || 3500;
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const corsOptions = require("./config/corsOptions");
+const { logger } = require("./middleware/logger");
+const errorHandler = require("./middleware/errorHandler");
 
+// always use at the first
+app.use(logger);
+
+app.use(cors(corsOptions));
 // middleware for json
 app.use(express.json());
+
+// middleware for parsing cookies
+app.use(cookieParser);
 
 // static file middleware
 app.use("/", express.static(path.join(__dirname, "/public")));
@@ -23,4 +35,7 @@ app.all("*", (req, res) => {
     res.type("text").send("404 Not Found");
   }
 });
+
+// always use at the end
+app.use(errorHandler);
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
