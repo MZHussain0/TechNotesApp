@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const path = require("path");
-const PORT = process.env.PORT || 3500;
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -10,6 +9,7 @@ const connectDB = require("./config/dbConn");
 const corsOptions = require("./config/corsOptions");
 const { logger, logEvents } = require("./middleware/logger");
 const errorHandler = require("./middleware/errorHandler");
+const PORT = process.env.PORT || 3500;
 
 // Connecting to database
 connectDB();
@@ -18,17 +18,19 @@ connectDB();
 app.use(logger);
 
 app.use(cors(corsOptions));
+
 // middleware for json
 app.use(express.json());
 
 // middleware for parsing cookies
-app.use(cookieParser);
+app.use(cookieParser());
 
 // static file middleware
 app.use("/", express.static(path.join(__dirname, "/public")));
 
 // Routes
 app.use("/", require("./routes/root"));
+app.use("/users", require("./routes/userRoutes"));
 
 //404 route
 app.all("*", (req, res) => {
