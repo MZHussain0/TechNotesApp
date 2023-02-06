@@ -24,22 +24,28 @@ const createNewUser = asyncHandler(async (req, res) => {
   const { username, password, roles } = req.body;
 
   //confirm data
-  if (!username || !password || !Array.isArray(roles) || !roles.length) {
+  if (!username || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   //check for duplicates
-  const duplicate = await User.findOne({ username }).lean().exec();
+  const duplicate = await User.findOne({ username })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
 
   if (duplicate) {
     return res
-      .send(409)
+      .status(409)
       .json({ message: "Username already taken. choose a different one" });
   }
 
   // Hash the password
   const hashedPwd = await bcrypt.hash(password, 10); // salt rounds
-  const userObject = { username, password: hashedPwd, roles };
+  const userObject =
+    !Array.isArray(roles) || !roles.length
+      ? { username, password: hashedPwd }
+      : { username, password: hashedPwd, roles };
 
   // create and store new user
   const user = User.create(userObject);
@@ -62,7 +68,6 @@ const updateUser = asyncHandler(async (req, res) => {
   if (
     !id ||
     !username ||
-    !password ||
     !Array.isArray(roles) ||
     !roles.length ||
     typeof active !== "boolean"
@@ -76,7 +81,10 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 
   // duplicate
-  const duplicate = await User.findOne({ username }).lean().exec();
+  const duplicate = await User.findOne({ username })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
 
   //Allow update to original user
   if (duplicate && duplicate?._id.toString() !== id) {
@@ -92,7 +100,7 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 
   const updatedUser = await user.save();
-  res.json({ message: `${updateUser.username} updated` });
+  res.json({ message: `${updatedUser.username} updated` });
 });
 
 //@desc delete a user

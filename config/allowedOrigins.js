@@ -1,7 +1,6 @@
 const allowedOrigins = [
-  "https://yoursite.com",
-  "http://127.0.0.1:5500/",
-  "http://localhost:5000/",
+  "https://technotespro.netlify.app",
+  "https://technotes-81v7.onrender.com",
 ];
 
 module.exports = allowedOrigins;
